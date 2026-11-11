@@ -26,19 +26,19 @@ token_online#appId
 
 ## 一、地址（已托管，直接用）
 
-插件里的 `script-path` 预填的是 **raw**（内容永远最新，没有 CDN 缓存问题）：
+插件里的 `script-path` 预填的是 **jsDelivr 固定版本**（版本号写死在 URL 里，不会被 CDN 缓存串成旧版）：
 
 ```
-https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js
+https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js
 ```
 
-raw 在你那儿打不开时，把插件里**两处** `script-path` 换成下面任一地址（**版本号不要丢**，
-`@main` 在 jsDelivr 上最多会缓存 12 小时，容易拿到旧内容）：
+jsDelivr 打不开时，把插件里**三处** `script-path` 换成 raw（raw 走 GitHub 自己的 CDN，刚 push 完
+可能有几分钟延迟，属正常）：
 
 | 优先级 | 地址 |
 | --- | --- |
-| 1 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
-| 2 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.4/chinaUnicom.token.js` |
+| 1 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js` |
+| 2 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/v1.0.5/chinaUnicom.token.js` |
 | 3 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
 
 ## 二、安装插件
@@ -46,8 +46,8 @@ raw 在你那儿打不开时，把插件里**两处** `script-path` 换成下面
 Loon → 首页 → **插件** → 右上角 **+**
 
 - **在线安装**：填插件地址
-  `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`
-  不通时用 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.4/chinaUnicom.token.plugin`
+  `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.plugin`
+  不通时用 `https://raw.githubusercontent.com/JwOKR/loon-unicom/v1.0.5/chinaUnicom.token.plugin`
 - **本地安装**：把 `.plugin` 存到「文件」App，选「从文件导入」
 
 装好后**必须确认这两处**，否则等于没装：
