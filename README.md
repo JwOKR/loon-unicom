@@ -26,34 +26,34 @@ token_online#appId
 
 ## 一、地址（已托管，直接用）
 
-插件里的 `script-path` 预填的是 **jsDelivr** 镜像（国内比 raw 稳）：
+插件里的 `script-path` 预填的是 **raw**（内容永远最新，没有 CDN 缓存问题）：
 
 ```
-https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js
+https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js
 ```
 
-国内直连不畅时，按这个顺序换（插件里**两处** `script-path` 一起换）：
+raw 在你那儿打不开时，把插件里**两处** `script-path` 换成下面任一地址（**版本号不要丢**，
+`@main` 在 jsDelivr 上最多会缓存 12 小时，容易拿到旧内容）：
 
 | 优先级 | 地址 |
 | --- | --- |
-| 1 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js` |
-| 2 | `https://cdn.statically.io/gh/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
-| 3 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
-| 4 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
-
-> jsDelivr 有缓存，仓库更新后若还拿到旧内容，可访问
-> `https://purge.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js` 刷新。
+| 1 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
+| 2 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.2/chinaUnicom.token.js` |
+| 3 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
 
 ## 二、安装插件
 
 Loon → 首页 → **插件** → 右上角 **+**
 
 - **在线安装**：填插件地址
-  `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.plugin`
-  （不通就换 `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`）
+  `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`
+  不通时用 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.2/chinaUnicom.token.plugin`
 - **本地安装**：把 `.plugin` 存到「文件」App，选「从文件导入」
 
-装好后在「插件」列表里确认开关是打开的，并且点进去能看到两条脚本：`联通Token抓取`、`联通Token确认`。
+装好后**必须确认这两处**，否则等于没装：
+
+1. 插件详情里能看到两条脚本：`联通Token抓取`、`联通Token确认`
+2. Loon 首页 → **脚本** 列表里也能看到这两条（不是灰色/不是"下载失败"）
 
 ## 三、开启 MITM（关键，不开则抓不到）
 
