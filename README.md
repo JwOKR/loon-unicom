@@ -38,7 +38,7 @@ raw 在你那儿打不开时，把插件里**两处** `script-path` 换成下面
 | 优先级 | 地址 |
 | --- | --- |
 | 1 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
-| 2 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.3/chinaUnicom.token.js` |
+| 2 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.4/chinaUnicom.token.js` |
 | 3 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
 
 ## 二、安装插件
@@ -47,13 +47,13 @@ Loon → 首页 → **插件** → 右上角 **+**
 
 - **在线安装**：填插件地址
   `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`
-  不通时用 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.3/chinaUnicom.token.plugin`
+  不通时用 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.4/chinaUnicom.token.plugin`
 - **本地安装**：把 `.plugin` 存到「文件」App，选「从文件导入」
 
 装好后**必须确认这两处**，否则等于没装：
 
-1. 插件详情里能看到两条脚本：`联通Token登录`、`联通Token通用`
-2. Loon 首页 → **脚本** 列表里也能看到这两条（不是灰色/不是"下载失败"）
+1. 插件详情里能看到三条脚本：`联通Token登录`、`联通Token通用`、`联通Token查看`
+2. Loon 首页 → **脚本** 列表里也能看到这三条（不是灰色/不是"下载失败"）
 
 > `联通Token登录` 只匹配 `onLine/login/logon`，**只有登录那一刻才跑**；平时刷 APP 只会看到
 > `联通Token通用` 在跑，这是正常的，不是没加载。
@@ -80,17 +80,39 @@ qlEnvName: "chinaUnicomCookie",
 > 青龙 2.10+ 的 OpenAPI 用 `PUT /open/envs` 更新变量；个别老版本 Loon 的 `$httpClient` 没有 `put`，
 > 此时会提示「当前 Loon 不支持 PUT」，升级 Loon 即可，或改用 `webhookUrl` 推给你自己的服务。
 
-## 五、验证是否生效
+## 五、怎么确认抓没抓到
 
-1. 打开联通 APP → 我的 → **退出登录** → **切换账号登录** → 用短信验证码登录
-2. 手机应弹出通知：`联通 Token 已更新 ✅ 186****0001 已验证可用（code=0）`
-3. Loon → **日志** 里搜 `[联通Token]`，能看到完整值：
-   ```
-   [联通Token] chinaUnicomCookie = 3f9c…(token)#0f4af…(appId)
-   ```
-4. 若配了青龙，去面板确认 `chinaUnicomCookie` 已变成 `Token#AppId`
+三种方式，从快到慢：
 
-平时不用天天登录：只要 APP 在跑，它调 `m.client.10010.com` 的请求里带着 `token_online`，插件同样会抓到并更新。
+**① 弹窗（最直接）**
+
+抓到并验证通过会弹：`联通 Token 已更新 ✅ 186****0001 已验证可用（code=0）`。
+没弹窗 = 没抓到，或抓到了但验证失败（会弹 `验证失败 ❌ code=xxx`）。
+
+**② 点一下「联通Token查看」（最可靠）**
+
+Loon → 首页 → **脚本** → 找到 `联通Token查看` → 点运行。它会弹通知告诉你：
+
+```
+联通 Token 状态
+共 1 个账号
+1. 186****0001 | 已验证 | 10-12 22:31
+```
+
+同时把完整值打到 Loon 日志：
+
+```
+[联通Token] chinaUnicomCookie = 3f9c…(token)#0f4af…(appId)
+```
+
+显示「还没有抓到」就说明确实没捕获到。如果配了青龙，点这一下还会顺手把当前值再推一次。
+
+**③ 看青龙**
+
+青龙 → 环境变量 → `chinaUnicomCookie`，值应该是 `Token#AppId` 形式。
+
+> 平时不用天天登录：只要 APP 在跑，它调 `*.10010.com` 的请求里带着 `token_online`，
+> 「通用」那条脚本就会抓到并更新。
 
 ## 六、和 Python 脚本怎么配合
 
@@ -139,4 +161,5 @@ appId        = parts[1]        # 有就带上，属于「Token#AppId 模式」
 
 - **解析/存储** 20 项：表单与 JSON 解析、Cookie 提取、onLine 请求体提取、appId 生成结构（10+147+2 位，与 Python `generate_appid()` 一致）、去重、多账号 `&` 合并、手机号换 key、非法 token 拦截
 - **流程模拟** 14 项：模拟 Loon 的 `$request/$response/$httpClient/$notification`，覆盖 Cookie 抓取→验证→写入、登录响应直接取手机号、重复请求静默、登录失败不落盘、模板 appId 被拒后自动回退纯 Token
+
 

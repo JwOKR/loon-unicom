@@ -3,26 +3,24 @@
 #!author=JwOKR
 #!system=ios
 #!tag=工具
-#!version=1.0.3
+#!version=1.0.4
 
 # ===========================================================================
 #  中国联通 Token#AppId 自动获取
 # ---------------------------------------------------------------------------
-#  两条规则分工（Loon 对同一请求只会挑第一条命中的 Request Script）：
-#    · 联通Token登录  仅匹配 onLine/login/logon，读 body —— 登录瞬间用
-#    · 联通Token通用  匹配所有 10010.com 请求，只看 Cookie/query，不读 body
-#  所以平时只有"通用"在跑，登录那一下才会出现"登录"，这是正常的。
+#  三条规则：
+#    · 联通Token登录  仅匹配 onLine/login/logon，读 body —— 登录瞬间抓；
+#    · 联通Token通用  匹配所有 10010.com 请求，只看 Cookie/query，不读 body；
+#    · 联通Token查看  generic，手动点一下：把当前抓到的值报到通知 + 日志。
+#  平时刷 APP 只会有"通用"在跑，"登录"只在登录那一下出现，这是正常的。
 #
 #  安装：
 #   1. Loon → 首页 → 插件 → 右上角 + → 从 URL 安装；
 #   2. Loon → 设置 → MitM → 生成并安装证书 → 到 iOS「关于本机 → 证书信任设置」里信任；
 #   3. 想自动写青龙的话，编辑 chinaUnicom.token.js 顶部的 CFG（qlUrl / qlClientId / qlClientSecret）。
 #
-#  触发：打开联通 APP（建议「退出登录 → 切换账号登录」走一次），
-#        抓到后手机弹通知，Loon 日志里可看到完整 Token#AppId。
-#
-#  脚本下载不通时，把两处 script-path 依次换成：
-#    https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.3/chinaUnicom.token.js
+#  脚本下载不通时，把三处 script-path 换成：
+#    https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.4/chinaUnicom.token.js
 #  或把 JS 存到「文件 → iCloud Drive → Loon → Script」，改用本地文件名：
 #    script-path=chinaUnicom.token.js
 # ===========================================================================
@@ -33,3 +31,4 @@ hostname = %APPEND% *.10010.com
 [Script]
 http-request ^https?:\/\/([a-z0-9-]+\.)*10010\.com\/(mobileService\/)?(onLine|login|logon) script-path=https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js,tag=联通Token登录,requires-body=true,timeout=15,debug=true
 http-request ^https?:\/\/([a-z0-9-]+\.)*10010\.com\/ script-path=https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js,tag=联通Token通用,requires-body=false,timeout=10
+generic script-path=https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js,tag=联通Token查看,timeout=10

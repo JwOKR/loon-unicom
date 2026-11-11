@@ -595,12 +595,57 @@ function handleResponse() {
   }
 }
 
+/* 手动查看（Loon 里的 generic 脚本「联通Token查看」点一下就跑这里） */
+function handleManual() {
+  var list = [];
+  try { list = mapValues(readMap()); } catch (e) { list = []; }
+
+  var cur = "";
+  try { cur = $persistentStore.read(K_CUR) || ""; } catch (e) { cur = ""; }
+
+  if (!list.length && !cur) {
+    notify("联通 Token 状态", "还没有抓到", "打开联通 APP → 我的 → 退出登录 → 切换账号登录，再点一次");
+    log("当前没有任何记录");
+    return;
+  }
+
+  var lines = [];
+  for (var i = 0; i < list.length; i++) {
+    var e = list[i];
+    var st = e.verified ? "已验证" : "未验证";
+    lines.push((i + 1) + ". " + (maskMobile(e.mobile) || "号码未知") + " | " + st + " | " + tsStr(e.time));
+  }
+
+  log("===== 联通 Token 状态 =====");
+  log("chinaUnicomCookie =", cur);
+  log("账号数:", list.length);
+  for (var j = 0; j < lines.length; j++) log("  " + lines[j]);
+
+  notify("联通 Token 状态", "共 " + list.length + " 个账号", lines.join("\n") + "\n完整值已打到 Loon 日志");
+
+  // 既然手动点了，顺手再推一次青龙
+  if (CFG.qlUrl && cur) {
+    qlSync(cur, function (msg) { log("青龙同步:", msg); });
+  }
+
+  if (typeof $done === "function") { try { $done({}); } catch (e2) { /* ignore */ } }
+}
+
+function tsStr(ts) {
+  if (!ts) return "-";
+  try {
+    var d = new Date(ts);
+    return (d.getMonth() + 1) + "-" + d.getDate() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+  } catch (e) { return "-"; }
+}
+
 (function main() {
   var hasResp = (typeof $response !== "undefined") && !!$response &&
     (typeof $response === "object") &&
     ("status" in $response || "body" in $response || "headers" in $response);
   if (hasResp) return handleResponse();
   if (typeof $request !== "undefined" && $request) return handleRequest();
+  return handleManual();
 })();
 
 /* 本地 Node 自测用（Loon 里不存在 module，无副作用） */
