@@ -26,30 +26,34 @@ token_online#appId
 
 ## 一、地址（已托管，直接用）
 
-插件里的 `script-path` 已经预填本仓库的 raw 链接：
-
-```
-https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js
-```
-
-国内直连 `raw.githubusercontent.com` 不通时，把插件里**两处** `script-path` 换成 jsDelivr 镜像：
+插件里的 `script-path` 预填的是 **jsDelivr** 镜像（国内比 raw 稳）：
 
 ```
 https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js
 ```
 
-> 想自己托管：把 `chinaUnicom.token.js` 传到你的 Gist / 仓库，改插件里两处 `script-path` 即可，格式同上。
+国内直连不畅时，按这个顺序换（插件里**两处** `script-path` 一起换）：
+
+| 优先级 | 地址 |
+| --- | --- |
+| 1 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js` |
+| 2 | `https://cdn.statically.io/gh/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
+| 3 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
+| 4 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
+
+> jsDelivr 有缓存，仓库更新后若还拿到旧内容，可访问
+> `https://purge.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js` 刷新。
 
 ## 二、安装插件
 
 Loon → 首页 → **插件** → 右上角 **+**
 
 - **在线安装**：填插件地址
-  `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`
-  （raw 不通就换 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.plugin`）
+  `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.plugin`
+  （不通就换 `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`）
 - **本地安装**：把 `.plugin` 存到「文件」App，选「从文件导入」
 
-装好后在「插件」列表里确认开关是打开的。
+装好后在「插件」列表里确认开关是打开的，并且点进去能看到两条脚本：`联通Token抓取`、`联通Token确认`。
 
 ## 三、开启 MITM（关键，不开则抓不到）
 
@@ -108,6 +112,7 @@ appId        = parts[1]        # 有就带上，属于「Token#AppId 模式」
 
 | 现象 | 原因 / 处理 |
 | --- | --- |
+| 插件装了，但插件详情里没有脚本条目 / 条目变灰 | ① 语法不对（本插件用的是 Loon 旧语法 `http-request <正则> script-path=...`，不是 Surge 的 `type=http-request, pattern=...`）；② 脚本下载失败，换 §一 里的镜像，或改成本地文件 |
 | 完全没通知、日志也没 `[联通Token]` | MITM 没开 / 证书没信任 / 插件没启用；先随便打开一个网页确认 Loon 能抓 HTTPS |
 | 其他 APP 能抓，联通不行 | 联通 APP 某些版本有证书绑定（SSL Pinning），Loon 无法绕过。改用安卓抓包手动取，见下 |
 | 通知 `验证失败 code=xxx` | token 已过期或被顶号，重新「退出登录 → 切换账号登录」再抓一次 |
