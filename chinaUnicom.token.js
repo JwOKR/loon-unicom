@@ -520,7 +520,14 @@ function handleRequest() {
     if (h["x-uc-probe"]) return $done({});          // 自家验证请求，跳过
 
     var got = extractFromRequest(req);
-    if (!got.token) return $done({});
+    if (!got.token) {
+      // 登录相关请求里没找到 token_online —— 说明字段名/位置和预期不同，打日志便于排查
+      if (/onLine|login|logon|logon\.do/i.test(req.url)) {
+        log("登录请求未找到 token_online:", req.url);
+        log("  method:", req.method || "?", "content-type:", h["content-type"] || "-", "cookie_len:", (h["cookie"] || "").length, "body_len:", (req.body || "").length);
+      }
+      return $done({});
+    }
 
     var entry = makeEntry(got.token, got.appId);
     if (!entry) return $done({});

@@ -38,7 +38,7 @@ raw 在你那儿打不开时，把插件里**两处** `script-path` 换成下面
 | 优先级 | 地址 |
 | --- | --- |
 | 1 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js` |
-| 2 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.2/chinaUnicom.token.js` |
+| 2 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.3/chinaUnicom.token.js` |
 | 3 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
 
 ## 二、安装插件
@@ -47,13 +47,16 @@ Loon → 首页 → **插件** → 右上角 **+**
 
 - **在线安装**：填插件地址
   `https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.plugin`
-  不通时用 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.2/chinaUnicom.token.plugin`
+  不通时用 `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.3/chinaUnicom.token.plugin`
 - **本地安装**：把 `.plugin` 存到「文件」App，选「从文件导入」
 
 装好后**必须确认这两处**，否则等于没装：
 
-1. 插件详情里能看到两条脚本：`联通Token抓取`、`联通Token确认`
+1. 插件详情里能看到两条脚本：`联通Token登录`、`联通Token通用`
 2. Loon 首页 → **脚本** 列表里也能看到这两条（不是灰色/不是"下载失败"）
+
+> `联通Token登录` 只匹配 `onLine/login/logon`，**只有登录那一刻才跑**；平时刷 APP 只会看到
+> `联通Token通用` 在跑，这是正常的，不是没加载。
 
 ## 三、开启 MITM（关键，不开则抓不到）
 
@@ -112,6 +115,7 @@ appId        = parts[1]        # 有就带上，属于「Token#AppId 模式」
 
 | 现象 | 原因 / 处理 |
 | --- | --- |
+| 运行记录里只有一条脚本在跑 | 正常：`联通Token登录` 只在 onLine/login/logon 出现时才跑，平时只有 `联通Token通用` |
 | 插件装了，但插件详情里没有脚本条目 / 条目变灰 | ① 语法不对（本插件用的是 Loon 旧语法 `http-request <正则> script-path=...`，不是 Surge 的 `type=http-request, pattern=...`）；② 脚本下载失败，换 §一 里的镜像，或改成本地文件 |
 | 完全没通知、日志也没 `[联通Token]` | MITM 没开 / 证书没信任 / 插件没启用；先随便打开一个网页确认 Loon 能抓 HTTPS |
 | 其他 APP 能抓，联通不行 | 联通 APP 某些版本有证书绑定（SSL Pinning），Loon 无法绕过。改用安卓抓包手动取，见下 |
@@ -135,3 +139,4 @@ appId        = parts[1]        # 有就带上，属于「Token#AppId 模式」
 
 - **解析/存储** 20 项：表单与 JSON 解析、Cookie 提取、onLine 请求体提取、appId 生成结构（10+147+2 位，与 Python `generate_appid()` 一致）、去重、多账号 `&` 合并、手机号换 key、非法 token 拦截
 - **流程模拟** 14 项：模拟 Loon 的 `$request/$response/$httpClient/$notification`，覆盖 Cookie 抓取→验证→写入、登录响应直接取手机号、重复请求静默、登录失败不落盘、模板 appId 被拒后自动回退纯 Token
+
