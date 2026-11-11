@@ -1,0 +1,28 @@
+#!name=中国联通 Token 自动获取
+#!desc=从联通 APP 流量中自动提取 token_online 与 appId，拼成 Token#AppId；可自动同步到青龙面板
+#!author=JwOKR
+#!system=ios
+#!tag=工具
+#!version=1.0.0
+
+# ===========================================================================
+#  中国联通 Token#AppId 自动获取
+# ---------------------------------------------------------------------------
+#  安装：
+#   1. Loon → 首页 → 插件 → 右上角 + → 从 URL 安装；
+#   2. Loon → 设置 → MitM → 生成并安装证书 → 到 iOS「关于本机 → 证书信任设置」里信任；
+#   3. 想自动写青龙的话，编辑 chinaUnicom.token.js 顶部的 CFG（qlUrl / qlClientId / qlClientSecret）。
+#
+#  触发方式：打开联通 APP（建议「退出登录 → 切换账号登录」走一次），
+#            抓到后手机弹通知，Loon 日志里可看到完整 Token#AppId。
+#
+#  脚本地址若被墙，把下面两处 script-path 换成 jsDelivr 镜像：
+#    https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@main/chinaUnicom.token.js
+# ===========================================================================
+
+[MITM]
+hostname = %APPEND% m.client.10010.com
+
+[Script]
+联通Token抓取 = type=http-request, pattern=^https?://m\.client\.10010\.com/, requires-body=1, script-path=https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js, timeout=15
+联通Token确认 = type=http-response, pattern=^https?://m\.client\.10010\.com/mobileService/(onLine|login|logon)\.htm, requires-body=1, script-path=https://raw.githubusercontent.com/JwOKR/loon-unicom/main/chinaUnicom.token.js, timeout=15
