@@ -29,7 +29,7 @@ token_online#appId
 插件里的 `script-path` 预填的是 **jsDelivr 固定版本**（版本号写死在 URL 里，不会被 CDN 缓存串成旧版）：
 
 ```
-https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js
+https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.6/chinaUnicom.token.js
 ```
 
 jsDelivr 打不开时，把插件里**三处** `script-path` 换成 raw（raw 走 GitHub 自己的 CDN，刚 push 完
@@ -37,7 +37,7 @@ jsDelivr 打不开时，把插件里**三处** `script-path` 换成 raw（raw �
 
 | 优先级 | 地址 |
 | --- | --- |
-| 1 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js` |
+| 1 | `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.6/chinaUnicom.token.js` |
 | 2 | `https://raw.githubusercontent.com/JwOKR/loon-unicom/v1.0.5/chinaUnicom.token.js` |
 | 3 | 本地文件：把 JS 存到「文件 → iCloud Drive → Loon → Script」，改成 `script-path=chinaUnicom.token.js` |
 
@@ -46,17 +46,17 @@ jsDelivr 打不开时，把插件里**三处** `script-path` 换成 raw（raw �
 Loon → 首页 → **插件** → 右上角 **+**
 
 - **在线安装**：填插件地址
-  `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.plugin`
+  `https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.6/chinaUnicom.token.plugin`
   不通时用 `https://raw.githubusercontent.com/JwOKR/loon-unicom/v1.0.5/chinaUnicom.token.plugin`
 - **本地安装**：把 `.plugin` 存到「文件」App，选「从文件导入」
 
 装好后**必须确认这两处**，否则等于没装：
 
-1. 插件详情里能看到三条脚本：`联通Token登录`、`联通Token通用`、`联通Token查看`
-2. Loon 首页 → **脚本** 列表里也能看到这三条（不是灰色/不是"下载失败"）
+1. 插件详情里能看到两条脚本：`联通Token登录响应`、`联通Token查看`
+2. Loon 首页 → **脚本** 列表里也能看到这两条（不是灰色/不是"下载失败"）
 
-> `联通Token登录` 只匹配 `onLine/login/logon`，**只有登录那一刻才跑**；平时刷 APP 只会看到
-> `联通Token通用` 在跑，这是正常的，不是没加载。
+> `联通Token登录响应` 只匹配 `*/mobileService/login.htm`、`onLine.htm`、`logon.htm`，
+> **只有登录那一刻才会跑**；平时刷 APP 没有任何脚本运行，这是正常的。
 
 ## 三、开启 MITM（关键，不开则抓不到）
 
@@ -111,8 +111,8 @@ Loon → 首页 → **脚本** → 找到 `联通Token查看` → 点运行。�
 
 青龙 → 环境变量 → `chinaUnicomCookie`，值应该是 `Token#AppId` 形式。
 
-> 平时不用天天登录：只要 APP 在跑，它调 `*.10010.com` 的请求里带着 `token_online`，
-> 「通用」那条脚本就会抓到并更新。
+> 注意：`token_online` **只在登录响应里出现**（不在 Cookie、不在请求体），所以只有走一次登录
+> 才会更新。token 有效期不短，掉登录后重登一次即可，不用天天抓。
 
 ## 六、和 Python 脚本怎么配合
 
@@ -137,16 +137,27 @@ appId        = parts[1]        # 有就带上，属于「Token#AppId 模式」
 
 | 现象 | 原因 / 处理 |
 | --- | --- |
-| 运行记录里只有一条脚本在跑 | 正常：`联通Token登录` 只在 onLine/login/logon 出现时才跑，平时只有 `联通Token通用` |
-| 插件装了，但插件详情里没有脚本条目 / 条目变灰 | ① 语法不对（本插件用的是 Loon 旧语法 `http-request <正则> script-path=...`，不是 Surge 的 `type=http-request, pattern=...`）；② 脚本下载失败，换 §一 里的镜像，或改成本地文件 |
+| 运行记录里没有脚本在跑 | 正常：`联通Token登录响应` 只在登录接口出现时才跑，平时刷 APP 不会有记录 |
+| 插件装了，但插件详情里没有脚本条目 / 条目变灰 | ① 语法不对（本插件用的是 Loon 旧语法 `http-response <正则> script-path=...`，不是 Surge 的 `type=http-response, pattern=...`）；② 脚本下载失败，换 §一 里的镜像，或改成本地文件 |
 | 完全没通知、日志也没 `[联通Token]` | MITM 没开 / 证书没信任 / 插件没启用；先随便打开一个网页确认 Loon 能抓 HTTPS |
 | 其他 APP 能抓，联通不行 | 联通 APP 某些版本有证书绑定（SSL Pinning），Loon 无法绕过。改用安卓抓包手动取，见下 |
 | 通知 `验证失败 code=xxx` | token 已过期或被顶号，重新「退出登录 → 切换账号登录」再抓一次 |
 | 通知 `已保存（未配置青龙/Webhook）` | 正常，只存本机；去 Loon 日志复制完整值 |
 | 想清空重来 | 删除持久化键 `unicom_token_map` 与 `unicom_token_current`（Loon 设置里的持久化数据），或把 `CFG.maxAccounts` 调小后重新抓 |
 
-**手动兜底（安卓）**：Reqable / HttpCanary 抓 `POST https://m.client.10010.com/mobileService/onLine.htm`，
-请求体里有 `token_online=` 和 `appId=`，拼成 `token#appId` 直接填青龙。
+**手动兜底（安卓）**：Reqable / HttpCanary 抓 `POST https://loginxx.10010.com/mobileService/login.htm`
+（或 `.../onLine.htm`）的**响应**，JSON 里 `token_online` 和 `appId` 都是明文，拼成 `token#appId` 填青龙。
+
+## 七点五、抓包实测结论（754 条 Loon 记录）
+
+| 项 | 实际情况 |
+| --- | --- |
+| `token_online` 在哪 | **只在登录接口的响应 JSON 里**，长度 704，纯小写十六进制 |
+| Cookie 里有吗 | 没有（Cookie 里是 `ecs_token` / `t3_token` / `u_account` / `c_mobile`） |
+| 请求体里有吗 | 没有（请求体是整段加密 base64） |
+| 登录接口 | `loginxx.10010.com/mobileService/login.htm` 和 `.../onLine.htm` |
+| `appId` | 同一条响应里，长度 192，与 `token_online` 成对出现 |
+| 手机号 | `desmobile` 是 `enc_` 密文，真号码取 Cookie 的 `u_account` / `c_mobile` |
 
 ## 八、注意
 
@@ -161,5 +172,6 @@ appId        = parts[1]        # 有就带上，属于「Token#AppId 模式」
 
 - **解析/存储** 20 项：表单与 JSON 解析、Cookie 提取、onLine 请求体提取、appId 生成结构（10+147+2 位，与 Python `generate_appid()` 一致）、去重、多账号 `&` 合并、手机号换 key、非法 token 拦截
 - **流程模拟** 14 项：模拟 Loon 的 `$request/$response/$httpClient/$notification`，覆盖 Cookie 抓取→验证→写入、登录响应直接取手机号、重复请求静默、登录失败不落盘、模板 appId 被拒后自动回退纯 Token
+
 
 

@@ -1,27 +1,28 @@
 #!name=中国联通 Token 自动获取
-#!desc=从联通 APP 流量中自动提取 token_online 与 appId，拼成 Token#AppId；可自动同步到青龙面板
+#!desc=从联通 APP 登录响应中自动提取 token_online 与 appId，拼成 Token#AppId；可自动同步到青龙面板
 #!author=JwOKR
 #!system=ios
 #!tag=工具
-#!version=1.0.5
+#!version=1.0.6
 
 # ===========================================================================
 #  中国联通 Token#AppId 自动获取
 # ---------------------------------------------------------------------------
-#  三条规则：
-#    · 联通Token登录  仅匹配 onLine/login/logon，读 body —— 登录瞬间抓；
-#    · 联通Token通用  匹配所有 10010.com 请求，只看 Cookie/query，不读 body；
-#    · 联通Token查看  generic，手动点一下：把当前抓到的值报到通知 + 日志。
-#  平时刷 APP 只会有"通用"在跑，"登录"只在登录那一下出现，这是正常的。
+#  实测（Loon 抓包 754 条）：
+#    · token_online 不在 Cookie、也不在请求体，只在登录接口的 **响应 JSON** 里；
+#    · 登录接口是 https://loginxx.10010.com/mobileService/login.htm 和 .../onLine.htm；
+#    · 响应里同时带 appId（192 位）、ecs_token、t3_token、desmobile（密文）。
+#  所以只保留一条 http-response 规则去读响应体；另加一条 generic 供手动查看。
 #
 #  安装：
 #   1. Loon → 首页 → 插件 → 右上角 + → 从 URL 安装；
 #   2. Loon → 设置 → MitM → 生成并安装证书 → 到 iOS「关于本机 → 证书信任设置」里信任；
 #   3. 想自动写青龙的话，编辑 chinaUnicom.token.js 顶部的 CFG（qlUrl / qlClientId / qlClientSecret）。
 #
-#  脚本地址用的是 v1.0.5 固定版本（不会被 CDN 缓存串版本）。
-#  如果 jsDelivr 打不开，把三处 script-path 换成 raw（raw 有几分钟 CDN 延迟）：
-#    https://raw.githubusercontent.com/JwOKR/loon-unicom/v1.0.5/chinaUnicom.token.js
+#  触发：打开联通 APP → 退出登录 → 切换账号登录。抓不到时点「联通Token查看」看状态。
+#
+#  脚本地址固定 v1.0.6。jsDelivr 打不开就换 raw（有几分钟 CDN 延迟）：
+#    https://raw.githubusercontent.com/JwOKR/loon-unicom/v1.0.6/chinaUnicom.token.js
 #  或把 JS 存到「文件 → iCloud Drive → Loon → Script」，改用本地文件名：
 #    script-path=chinaUnicom.token.js
 # ===========================================================================
@@ -30,6 +31,5 @@
 hostname = %APPEND% *.10010.com
 
 [Script]
-http-request ^https?:\/\/([a-z0-9-]+\.)*10010\.com\/(mobileService\/)?(onLine|login|logon) script-path=https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js,tag=联通Token登录,requires-body=true,timeout=15,debug=true
-http-request ^https?:\/\/([a-z0-9-]+\.)*10010\.com\/ script-path=https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js,tag=联通Token通用,requires-body=false,timeout=10
-generic script-path=https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.5/chinaUnicom.token.js,tag=联通Token查看,timeout=10
+http-response ^https?:\/\/([a-z0-9-]+\.)*10010\.com\/mobileService\/(login|onLine|logon)\.htm script-path=https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.6/chinaUnicom.token.js,tag=联通Token登录响应,requires-body=true,timeout=15,debug=true
+generic script-path=https://cdn.jsdelivr.net/gh/JwOKR/loon-unicom@v1.0.6/chinaUnicom.token.js,tag=联通Token查看,timeout=10

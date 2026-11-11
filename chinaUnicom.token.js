@@ -137,7 +137,7 @@ function cookieOf(headers, name) {
 function looksToken(v) {
   if (!v) return false;
   v = String(v).trim();
-  if (v.length < 16 || v.length > 200) return false;
+  if (v.length < 16 || v.length > 2000) return false;   // 联通 token_online 实测 704 位
   return /^[0-9A-Za-z_.\-]+$/.test(v);
 }
 
@@ -569,6 +569,11 @@ function handleResponse() {
       if (!token) token = j.token_online || j.token || "";
       if (!appId) appId = j.appId || "";
       mobile = j.desmobile || j.mobile || "";
+    }
+    // desmobile 是 enc_ 开头的密文，真号码从 Cookie（u_account / c_mobile）里取
+    if (!/^1\d{10}$/.test(mobile)) {
+      var ua = cookieOf(req.headers, "u_account") || cookieOf(req.headers, "c_mobile");
+      if (/^1\d{10}$/.test(ua)) mobile = ua;
     }
     if (!token) {
       var sh = lc(resp.headers);
